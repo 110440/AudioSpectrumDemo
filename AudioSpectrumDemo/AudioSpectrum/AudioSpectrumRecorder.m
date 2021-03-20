@@ -36,17 +36,29 @@
 
 - (void)setupRecorder {
     AVAudioInputNode *inputNode = self.engine.inputNode;
-    AVAudioMixerNode *mixerNode = self.engine.mainMixerNode;
-    [self.engine connect:inputNode to:mixerNode format:[inputNode inputFormatForBus:0]];
-    //在添加tap之前先移除上一个  不然有可能报"Terminating app due to uncaught exception 'com.apple.coreaudio.avfaudio',"之类的错误
-    [mixerNode removeTapOnBus:0];
-    [mixerNode installTapOnBus:0 bufferSize:self.bufferSize format:[mixerNode outputFormatForBus:0] block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
-        buffer.frameLength = self.bufferSize;
-        NSArray *spectrums = [self.analyzer analyse:buffer withAmplitudeLevel:25];
-        if ([self.delegate respondsToSelector:@selector(recorderDidGenerateSpectrum:)]) {
-            [self.delegate recorderDidGenerateSpectrum:spectrums];
-        }
+    
+    
+    [inputNode removeTapOnBus:0];
+    [inputNode installTapOnBus:0 bufferSize:self.bufferSize format:[inputNode inputFormatForBus:0] block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
+            buffer.frameLength = self.bufferSize;
+            NSArray *spectrums = [self.analyzer analyse:buffer withAmplitudeLevel:25];
+            if ([self.delegate respondsToSelector:@selector(recorderDidGenerateSpectrum:)]) {
+                [self.delegate recorderDidGenerateSpectrum:spectrums];
+            }
     }];
+    
+    //AVAudioMixerNode *mixerNode = self.engine.mainMixerNode;
+//    [self.engine connect:inputNode to:mixerNode format:[inputNode inputFormatForBus:0]];
+//
+//    //在添加tap之前先移除上一个  不然有可能报"Terminating app due to uncaught exception 'com.apple.coreaudio.avfaudio',"之类的错误
+//    [mixerNode removeTapOnBus:0];
+//    [mixerNode installTapOnBus:0 bufferSize:self.bufferSize format:[mixerNode outputFormatForBus:0] block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
+//        buffer.frameLength = self.bufferSize;
+//        NSArray *spectrums = [self.analyzer analyse:buffer withAmplitudeLevel:25];
+//        if ([self.delegate respondsToSelector:@selector(recorderDidGenerateSpectrum:)]) {
+//            [self.delegate recorderDidGenerateSpectrum:spectrums];
+//        }
+//    }];
 }
 
 - (void)startRecord {
